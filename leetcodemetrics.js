@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
   let username = document.getElementById("inputfield");
   let searchbtn = document.getElementById("searchbar");
-  let Easyprogresscircle = document.getElementById("Easy-progress");
-  let Mediumprogresscircle = document.getElementById("Medium-progress");
-  let hardprogresscircle = document.getElementById("Hard-progress");
-  let Easylabel = document.getElementById("Easy-label");
-  let Mediumlabel = document.getElementById("Medium-label");
-  let Hardlabel = document.getElementById("Hard-label");
+  let Easyprogresscircle = document.querySelector(".Easy-progress");
+  let Mediumprogresscircle = document.querySelector(".Medium-progress");
+  let Hardprogresscircle = document.querySelector(".Hard-progress");
+  let Easylabel = document.querySelector(".Easy-label");
+  let Mediumlabel = document.querySelector(".Medium-label");
+  let Hardlabel = document.querySelector(".Hard-label");
   let statscontainer = document.querySelector(".stats-container");
   function validateusername(username) {
     if (username.trim() === "") {
@@ -20,12 +20,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return ismatch;
   }
-
+  //function call
+  function calculateUserDetail(
+    totalQuestions,
+    solvedQuestion,
+    label,
+    progresscircle,
+  ) {
+    const progressdegree = (solvedQuestion / totalQuestions) * 100;
+    progresscircle.style.setProperty("--progress-degree", `${progressdegree}%`);
+    label.textContent = `${solvedQuestion}/${totalQuestions}`;
+    console.log("Easy:", Easyprogresscircle);
+    console.log("Medium:", Mediumprogresscircle);
+    console.log("Hard:", Hardprogresscircle);
+  }
   function EnterUserDetail(Parseddata) {
-    const totalQuestions = Parseddata.data.llQuestionsCount[0].count;
-    const totalEasyQuestions = Parseddata.data.llQuestionsCount[1].count;
-    const totalMediumQuestions = Parseddata.data.llQuestionsCount[2].count;
-    const totalHardQuestions = Parseddata.data.llQuestionsCount[3].count;
+    const totalQuestions = Parseddata.data.allQuestionsCount[0].count;
+    const totalEasyQuestions = Parseddata.data.allQuestionsCount[1].count;
+    const totalMediumQuestions = Parseddata.data.allQuestionsCount[2].count;
+    const totalHardQuestions = Parseddata.data.allQuestionsCount[3].count;
 
     //solved question
     const solvedQuestion =
@@ -38,32 +51,26 @@ document.addEventListener("DOMContentLoaded", function () {
       Parseddata.data.matchedUser.submitStats.acSubmissionNum[3].count;
 
     calculateUserDetail(
-      totalQuestions,
-      solvedQuestion,
-      Easylabel,
-      Easyprogresscircle,
-    );
-    calculateUserDetail(
-      totalQuestions,
-      solvedQuestion,
+      totalEasyQuestions,
+      solvedEasyQuestion,
       Easylabel,
       Easyprogresscircle,
     );
 
     calculateUserDetail(
-      totalQuestions,
-      solvedQuestion,
-      Easylabel,
-      Easyprogresscircle,
+      totalMediumQuestions,
+      solvedMediumQuestion,
+      Mediumlabel,
+      Mediumprogresscircle,
     );
-
     calculateUserDetail(
-      totalQuestions,
-      solvedQuestion,
-      Easylabel,
-      Easyprogresscircle,
+      totalHardQuestions,
+      solvedHardQuestion,
+      Hardlabel,
+      Hardprogresscircle,
     );
   }
+
   async function fetchusername(username) {
     try {
       searchbtn.textContent = "searching...";
@@ -82,14 +89,13 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: header,
         body: graphql,
-        redrirect: "follow",
       };
       let response = await fetch(proxyserver + url, request);
       let Parseddata = await response.json();
       console.log(Parseddata);
       EnterUserDetail(Parseddata);
     } catch (error) {
-      statscontainer.innerHTML = "<p>No data found</p>";
+      statscontainer.innerHTML = `${error}`;
     } finally {
       searchbtn.textContent = "search";
       searchbtn.disabled = false;
